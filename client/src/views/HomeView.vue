@@ -1,3 +1,13 @@
+<script setup lang="ts">
+const openSourceCode = () => {
+  window.open('https://github.com/kirodotdev/spirit-of-kiro/', '_blank')
+}
+
+const openGuide = () => {
+  window.open('https://kiro.dev/docs/guides/learn-by-playing/', '_blank')
+}
+</script>
+
 <template>
   <div class="home">
     <div class="hero">
@@ -77,6 +87,17 @@ h1 {
   .play-button {
     padding: 0.8rem 2rem;
     font-size: 1.1rem;
+  }
+
+  .utility-buttons {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .source-button,
+  .guide-button {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.9rem;
   }
 
   .utility-buttons {
