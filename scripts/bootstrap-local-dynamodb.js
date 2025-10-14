@@ -44,7 +44,20 @@ async function bootstrapLocalDynamoDB() {
   // Read and parse the CloudFormation template
   console.log(`📋 Reading template file: ${TEMPLATE_PATH}`);
   const templateContent = readFileSync(TEMPLATE_PATH, 'utf8');
-  const template = parse(templateContent);
+ 
+  // Parse YAML with custom schema to handle CloudFormation intrinsic functions
+  const template = parse(templateContent, {
+    customTags: [
+      {
+        tag: '!Ref',
+        resolve: (value) => ({ 'Ref': value })
+      },
+      {
+        tag: '!GetAtt',
+        resolve: (value) => ({ 'Fn::GetAtt': Array.isArray(value) ? value : [value] })
+      }
+    ]
+  });
   
   // Extract table definitions from the template
   const tables = Object.entries(template.Resources)
