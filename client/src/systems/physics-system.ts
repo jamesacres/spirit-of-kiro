@@ -60,8 +60,12 @@ export class PhysicsSystem {
 
   private update(timestamp: number) {
     // Calculate delta time in seconds
-    const deltaTime = (timestamp - this.lastTimestamp) / 1000;
+    let deltaTime = (timestamp - this.lastTimestamp) / 1000;
     this.lastTimestamp = timestamp;
+    
+    // Clamp deltaTime to prevent physics explosions when tab is inactive
+    // Maximum of 1/60th second (16.67ms) to maintain stable physics
+    deltaTime = Math.min(deltaTime, 1/60);
     
     // Update physics for all objects
     this.updatePhysics(deltaTime);
