@@ -12,6 +12,7 @@ export interface GameObject {
   depth?: number
   playerIsNear?: boolean
   physics?: PhysicsProperties
+  interactive: boolean
   props: any
 }
 
@@ -66,9 +67,9 @@ export class GameObjectSystem {
       }
     })
 
-    // Find the closest object based on tile distance
+    // Find the closest interactive object based on tile distance
     this.objects.value.forEach(obj => {
-      if (obj.id === 'player') {
+      if (obj.id === 'player' || !obj.interactive) {
         return
       }
 
