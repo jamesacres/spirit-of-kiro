@@ -1,5 +1,5 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: Creates Cognito User Pool and App Client for the game authentication
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates Cognito User Pool and App Client for the game authentication with email verification
 
 Parameters:
   Environment:
@@ -7,7 +7,51 @@ Parameters:
     Description: Environment name (e.g., dev, prod)
     Default: dev
 
+  SESSourceEmail:
+    Type: String
+    Description: Verified SES email address for sending emails
+    Default: noreply@spiritofkiro.com
+
 Resources:
+  # SES Identity for email sending
+  SESIdentity:
+    Type: AWS::SES::EmailIdentity
+    Properties:
+      EmailIdentity: !Ref SESSourceEmail
+      ConfigurationSetAttributes:
+        ConfigurationSetName: !Ref SESConfigurationSet
+      DkimAttributes:
+        SigningEnabled: true
+
+  # SES Configuration Set for tracking
+  SESConfigurationSet:
+    Type: AWS::SES::ConfigurationSet
+    Properties:
+      Name: !Sub "${AWS::StackName}-ses-config"
+
+  # IAM Role for Cognito to send emails via SES
+  CognitoSESRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-cognito-ses-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cognito-idp.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: SESEmailSendingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource: !Sub "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/${SESSourceEmail}"
+
   # Cognito User Pool
   UserPool:
     Type: AWS::Cognito::UserPool
@@ -37,6 +81,31 @@ Resources:
         CaseSensitive: false
       UserPoolAddOns:
         AdvancedSecurityMode: "OFF"
+      # Email verification configuration
+      AutoVerifiedAttributes:
+        - email
+      EmailConfiguration:
+        EmailSendingAccount: DEVELOPER
+        SourceArn: !Sub "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/${SESSourceEmail}"
+        ReplyToEmailAddress: !Ref SESSourceEmail
+        From: !Sub "Spirit of Kiro <${SESSourceEmail}>"
+      # Email verification templates
+      VerificationMessageTemplate:
+        EmailSubject: "Verify your Spirit of Kiro account"
+        EmailMessage: |
+          Welcome to Spirit of Kiro!
+
+          Thank you for creating your account. To complete your registration and start your crafting journey, please verify your email address by clicking the link below:
+
+          {##Verify Email##}
+
+          This link will expire in 24 hours.
+
+          If you didn't create this account, you can safely ignore this email.
+
+          Happy crafting!
+          The Spirit of Kiro Team
+        DefaultEmailOption: CONFIRM_WITH_LINK
 
   # Cognito App Client
   UserPoolClient:
@@ -73,4 +142,22 @@ Outputs:
     Description: ARN of the Cognito User Pool
     Value: !GetAtt UserPool.Arn
     Export:
-      Name: !Sub "${AWS::StackName}-UserPoolArn" 
+      Name: !Sub "${AWS::StackName}-UserPoolArn"
+
+  SESIdentityArn:
+    Description: ARN of the SES Identity
+    Value: !Sub "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/${SESSourceEmail}"
+    Export:
+      Name: !Sub "${AWS::StackName}-SESIdentityArn"
+
+  SESSourceEmail:
+    Description: Source email address for SES
+    Value: !Ref SESSourceEmail
+    Export:
+      Name: !Sub "${AWS::StackName}-SESSourceEmail"
+
+  CognitoSESRoleArn:
+    Description: ARN of the Cognito SES Role
+    Value: !GetAtt CognitoSESRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-CognitoSESRoleArn"
