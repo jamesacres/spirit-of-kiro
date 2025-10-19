@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import leverImage from '../assets/lever.png';
 import { useGameStore } from '../stores/game';
 import type { Item } from '../systems/item-system';
+import InteractPrompt from './InteractPrompt.vue';
 
 const props = defineProps<{
   id: string,
@@ -180,7 +181,7 @@ onUnmounted(() => {
     border: gameStore.debug ? '1px solid red': 'none',
     zIndex: 10
   }">
-    <div v-if="playerIsNear && !isPulling && !isPulled" class="interact-prompt">E</div>
+    <InteractPrompt :show="playerIsNear && !isPulling && !isPulled" top-offset="-80%" />
     <img 
       :src="leverImage" 
       :height="depth * tileSize"
@@ -211,18 +212,7 @@ onUnmounted(() => {
   animation: pulse 1s infinite;
 }
 
-.interact-prompt {
-  position: absolute;
-  top: -80%;
-  right: -10%;
-  font-size: calc(0.5 * v-bind(tileSize))px;
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 0 5px white;
-  background-color: black;
-  padding: 5px 10px;
-  border-radius: 4px;
-}
+
 
 @keyframes pulse {
   0% { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.5)); }

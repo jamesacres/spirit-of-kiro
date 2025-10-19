@@ -4,6 +4,7 @@ import computerZoomImage from '../assets/computer-zoom.png';
 import { useGameStore } from '../stores/game';
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import ComputerFullscreen from './ComputerFullscreen.vue';
+import InteractPrompt from './InteractPrompt.vue';
 import { getRarityClass } from '../utils/items';
 
 const props = defineProps<{
@@ -118,7 +119,7 @@ const closeFullscreen = () => {
       height: `${depth * tileSize}px`,
       border: gameStore.debug ? '1px solid red': 'none'
     }">
-      <div v-if="playerIsNear" class="interact-prompt">E</div>
+      <InteractPrompt :show="playerIsNear" top-offset="calc(-.3 * v-bind(tileSize) * 1px)" />
       
       <img 
         :src="computerImage" 
@@ -173,21 +174,7 @@ const closeFullscreen = () => {
   filter: drop-shadow(0 0 15px white);
 }
 
-.interact-prompt {
-  position: absolute;
-  top: calc(-.3 * v-bind(tileSize) * 1px);
-  left: calc(2 * v-bind(tileSize) * 1px);
-  font-size: calc(0.5 * v-bind(tileSize) * 1px);
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 0 5px white;
-  animation: pulse 1s infinite;
-  background-color: black;
-  padding: calc(0.1 * v-bind(tileSize) * 1px) calc(0.1 * v-bind(tileSize) * 1px);
-  border-radius: calc(0.08 * v-bind(tileSize) * 1px);
-  z-index: 1;
-  line-height: 1;
-}
+
 
 .capacity-grid {
   position: absolute;
@@ -208,9 +195,5 @@ const closeFullscreen = () => {
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
 }
 
-@keyframes pulse {
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
-}
+
 </style> 

@@ -3,6 +3,7 @@ import { type PhysicsProperties } from '../utils/physics';
 import { onMounted, onUnmounted, computed } from 'vue';
 import { useGameStore } from '../stores/game';
 import { getRarityClass } from '../utils/items';
+import InteractPrompt from './InteractPrompt.vue';
 
 const store = useGameStore();
 
@@ -162,7 +163,7 @@ onUnmounted(() => {
       }"
     ></div>
     <div class="item-container" :class="[{ 'item-near': playerIsNear }, rarityClass]">
-      <div v-if="playerIsNear" class="interact-prompt">E</div>
+      <InteractPrompt :show="playerIsNear" top-offset="-40px" />
       <img :src="icon" alt="Item" class="item-image" />
     </div>
     <!--<div class="item-name" :class="getRarityClass">{{ item?.name || 'Unknown Item' }}</div>-->
@@ -197,17 +198,5 @@ onUnmounted(() => {
   background-color: rgba(255, 0, 0, 0.1);
 }
 
-.interact-prompt {
-  position: absolute;
-  top: -40px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: calc(0.5 * v-bind(tileSize))px;
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 0 5px white;
-  background-color: black;
-  padding: 5px 10px;
-  border-radius: 4px;
-}
+
 </style>
